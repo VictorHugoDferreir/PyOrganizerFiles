@@ -1,0 +1,11 @@
+# Ignorar arquivos temporários do Python
+__pycache__/
+*.pyc
+
+# Ignorar o banco de dados local e logs de teste
+*.db
+*.log
+
+# Ignorar pastas de ambientes virtuais (se usar)
+.venv/
+venv/
