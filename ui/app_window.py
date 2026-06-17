@@ -4,8 +4,10 @@ from tkinter import filedialog
 from tkinter import ttk
 from tkinter import messagebox
 
-from PyOrganizer.infra.config_loader import ConfigLoader
+from infra.config_loader import ConfigLoader
 from core.file_organizer import FileOrganizer
+from infra.history_manager import HistoryManager
+from core.folder_monitor import FolderMonitor
 
 
 class AppWindow:
@@ -13,6 +15,8 @@ class AppWindow:
     def __init__(self, logger):
 
         self.logger = logger
+
+        self.monitor = None
 
         self.organizer = FileOrganizer(
             logger
@@ -106,6 +110,25 @@ class AppWindow:
 
         self.undo_button.pack(pady=5)
 
+        self.history_button = tk.Button( #botão para mostrar o histórico de organização, que exibe uma janela com as informações dos arquivos organizados, incluindo nome do arquivo, pasta de origem, pasta de destino e categoria. O histórico é carregado usando o HistoryManager e exibido em um formato legível para o usuário.
+            self.root,
+            text="Ver Histórico",
+            command=self.show_history
+        )
+
+        self.history_button.pack(pady=5)
+
+        #Botão Monitorar
+        self.monitor_button = tk.Button(
+            self.root,
+            text="Iniciar Monitoramento",
+            command=self.start_monitor
+        )
+
+        self.monitor_button.pack(
+            pady=5
+        )
+
         # Barra de progresso
         self.progress = ttk.Progressbar(
             self.root,
@@ -173,16 +196,27 @@ class AppWindow:
                 text="Organizando..."
             )
 
-            self.organizer.run(
+            stats = self.organizer.run(
                 source,
                 destination,
                 self.update_progress
             )
 
-            self.status_label.config(
-                text="Concluído!"
-            )
+            self.progress["value"] = 0
 
+            self.status_label.config(
+                text=f"{stats['total']} arquivos organizados"
+            )
+            
+            self.stats_label.config(
+                text=
+                f"📷 Imagens: {stats['Imagens']}\n"
+                f"📄 Documentos: {stats['Documentos']}\n"
+                f"🎬 Videos: {stats['Videos']}\n"
+                f"📦 Compactados: {stats['Compactados']}\n"
+                f"📁 Outros: {stats['Outros']}"
+            )
+            
             messagebox.showinfo(
                 "Sucesso",
                 "Arquivos organizados com sucesso!"
@@ -197,6 +231,61 @@ class AppWindow:
 
             self.status_label.config(
                 text="Erro"
+            )
+    def show_history(self):
+
+        history = HistoryManager.load_history()
+
+        history_window = tk.Toplevel(
+            self.root
+        )
+
+        history_window.title(
+            "Histórico de Organizações"
+        )
+
+        history_window.geometry(
+            "800x400"
+        )
+
+        scrollbar = tk.Scrollbar(
+        history_window
+        )
+
+        scrollbar.pack(
+            side=tk.RIGHT,
+            fill=tk.Y
+        )
+
+        listbox = tk.Listbox(
+            history_window,
+            width=120,
+            height=20,
+            yscrollcommand=scrollbar.set
+        )
+
+        listbox.pack(
+            fill=tk.BOTH,
+            expand=True
+        )
+
+        scrollbar.config(
+            command=listbox.yview
+        )
+        if not history:
+
+            listbox.insert(
+                tk.END,
+                "Nenhum histórico encontrado."
+            )
+
+            return
+
+        for entry in history:
+
+            listbox.insert(
+                tk.END,
+                f"{entry['file']}  →  {entry['category']}"
             )
 
     def undo(self):
@@ -219,3 +308,23 @@ class AppWindow:
 
     def start(self):
         self.root.mainloop()
+
+    def start_monitor(self):
+
+        source = self.source_entry.get()
+
+        destination = (
+            self.destination_entry.get()
+        )
+
+        self.monitor = FolderMonitor(
+            source,
+            destination,
+            self.organizer
+        )
+
+        self.monitor.start()
+
+        self.status_label.config(
+            text="Monitorando..."
+        )

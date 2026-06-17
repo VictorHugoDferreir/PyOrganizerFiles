@@ -5,10 +5,15 @@ class FileClassifier:
     RULES = {
         ".jpg": "Imagens",
         ".png": "Imagens",
+        ".jpeg": "Imagens",
         ".pdf": "Documentos",
         ".docx": "Documentos",
         ".zip": "Compactados",
-        ".mp4": "Videos"
+        ".mp4": "Videos",
+        ".txt": "Documentos",
+        ".xlsx": "Planilhas",
+        ".pptx": "Apresentações",
+        ".csv": "Planilhas",
     }
 
     @classmethod

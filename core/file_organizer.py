@@ -4,6 +4,7 @@ from importlib.resources import files
 from pathlib import Path
 from infra.file_mover import FileMover
 from core.file_classifier import FileClassifier
+from infra.history_manager import HistoryManager
 
 class FileOrganizer:
 
@@ -34,9 +35,25 @@ class FileOrganizer:
 
         if not files:
             self.logger.warning("Nenhum arquivo encontrado.")
-            return
+            return {
+                "total": 0,
+                "Imagens": 0,
+                "Documentos": 0,
+                "Videos": 0,
+                "Compactados": 0,
+                "Outros": 0
+            }
     
         total = len(files)
+
+        stats = {
+            "total": total,
+            "Imagens": 0,
+            "Documentos": 0,
+            "Videos": 0,
+            "Compactados": 0,
+            "Outros": 0
+        }
 
         self.last_run.clear()
 
@@ -65,6 +82,15 @@ class FileOrganizer:
                     destination
                 )
 
+                HistoryManager.add_entry( #adiciona ao histórico
+                    {
+                        "file": file.name,
+                        "source": str(file),
+                        "destination": str(moved_to),
+                        "category": category
+                    }
+                )
+
                 # Guarda para desfazer depois
                 self.last_run.append(
                     (
@@ -72,6 +98,9 @@ class FileOrganizer:
                         str(file)
                     )
                 )
+
+                stats["total"] += 1 
+                stats[category] += 1
 
                 self.logger.info(
                     f"{file.name} -> {category}"
@@ -95,6 +124,8 @@ class FileOrganizer:
         self.logger.info(
             "Organização concluída."
         )
+
+        return stats
 
     def undo(self):
 
