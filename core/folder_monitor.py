@@ -2,8 +2,6 @@ from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
 from pathlib import Path
 from core.file_organizer import FileOrganizer
-
-from pathlib import Path
 import time
 
 class DownloadHandler(
@@ -19,6 +17,23 @@ class DownloadHandler(
         self.organizer = organizer
         self.destination = destination
 
+    def wait_until_ready(self, file_path, timeout=30):
+
+        file_path = Path(file_path)
+
+        start = time.time()
+
+        while time.time() - start < timeout:
+
+            try:
+                with open(file_path, "rb"):
+                    return True
+
+            except (PermissionError, FileNotFoundError):
+                time.sleep(0.5)
+
+        return False
+
     def on_created(self, event):
 
         if event.is_directory:
@@ -27,22 +42,35 @@ class DownloadHandler(
         file_path = Path(
             event.src_path
         )
+        # Ignora arquivos temporários
+        if file_path.suffix.lower() in {
+            ".tmp",
+            ".part",
+            ".crdownload"
+        }:
+            return
 
-        print(
-            f"Novo arquivo: {file_path.name}"
-        )
-    try:
+        # Espera o arquivo ficar disponível
+        if not self.wait_until_ready(file_path):
+            print("Arquivo não ficou disponível.")
+            return
+        
+        try:
 
-        self.organizer.run(
-            file_path.parent,
-            self.destination
-        )
+            self.organizer.run(
+                file_path.parent,
+                self.destination
+            )
 
-    except Exception as e:
+            print(
+                f"Arquivo {file_path.name} organizado."
+            )
 
-        print(
-            f"Erro: {e}"
-        )
+        except Exception as e:
+
+            print(
+                f"Erro: {e}"
+            )
 
 class FolderMonitor:
 
