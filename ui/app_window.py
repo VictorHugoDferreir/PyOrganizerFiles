@@ -159,11 +159,11 @@ class AppWindow:
         self.btn_run.pack()
 
         self.stats_label = tk.Label(
-        self.root,
-        text="pronto",
-        justify="left",
-        anchor="w"
-    )
+            self.root,
+            text="Pronto",
+            justify="left",
+            anchor="w"
+        )
 
         self.stats_label.pack(pady=10)
 
