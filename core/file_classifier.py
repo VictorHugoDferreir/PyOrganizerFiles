@@ -14,6 +14,12 @@ class FileClassifier:
         ".xlsx": "Planilhas",
         ".pptx": "Apresentações",
         ".csv": "Planilhas",
+        ".ppt": "Apresentações",
+        ".xls": "Planilhas",
+        ".doc": "Documentos",
+        ".avi": "Videos",
+        ".rar": "Compactados",
+        ".7z": "Compactados",
     }
 
     @classmethod
