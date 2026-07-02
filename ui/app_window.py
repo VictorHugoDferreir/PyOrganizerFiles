@@ -119,15 +119,31 @@ class AppWindow:
         self.history_button.pack(pady=5)
 
         #Botão Monitorar
+        monitor_row = tk.Frame(self.root)
+        monitor_row.pack(pady=5)
+
         self.monitor_button = tk.Button(
-            self.root,
+            monitor_row,
             text="Iniciar Monitoramento",
             command=self.start_monitor
         )
 
-        self.monitor_button.pack(
-            pady=5
+        self.monitor_button.pack(side=tk.LEFT)
+
+        tk.Button(
+            monitor_row,
+            text="?",
+            width=2,
+            command=self.show_monitor_help
+        ).pack(side=tk.LEFT, padx=(5, 0))
+
+        self.stop_monitor_button = tk.Button(
+            self.root,
+            text="Parar Monitoramento",
+            command=self.stop_monitor
         )
+
+        self.stop_monitor_button.pack(pady=5)
 
         # Barra de progresso
         self.progress = ttk.Progressbar(
@@ -142,12 +158,14 @@ class AppWindow:
         self.btn_run.pack(pady=20)
         self.btn_run.pack()
 
-        self.status_label = tk.Label(
+        self.stats_label = tk.Label(
         self.root,
-        text="Pronto"
-        )
+        text="pronto",
+        justify="left",
+        anchor="w"
+    )
 
-        self.status_label.pack()
+        self.stats_label.pack(pady=10)
 
     def select_source(self): #seleciona a pasta de origem usando um diálogo de seleção de diretório. Se o usuário selecionar uma pasta, o caminho da pasta é inserido no campo de entrada correspondente na interface gráfica.
 
@@ -192,7 +210,7 @@ class AppWindow:
                 }
             )
 
-            self.status_label.config(
+            self.stats_label.config(
                 text="Organizando..."
             )
 
@@ -204,7 +222,7 @@ class AppWindow:
 
             self.progress["value"] = 0
 
-            self.status_label.config(
+            self.stats_label.config(
                 text=f"{stats['total']} arquivos organizados"
             )
             
@@ -214,6 +232,8 @@ class AppWindow:
                 f"📄 Documentos: {stats['Documentos']}\n"
                 f"🎬 Videos: {stats['Videos']}\n"
                 f"📦 Compactados: {stats['Compactados']}\n"
+                f"📊 Planilhas: {stats['Planilhas']}\n"
+                f"📽 Apresentações: {stats['Apresentações']}\n"
                 f"📁 Outros: {stats['Outros']}"
             )
             
@@ -229,7 +249,7 @@ class AppWindow:
                 str(e)
             )
 
-            self.status_label.config(
+            self.stats_label.config(
                 text="Erro"
             )
     def show_history(self):
@@ -311,6 +331,15 @@ class AppWindow:
 
     def start_monitor(self):
 
+        if self.monitor is not None:
+
+            messagebox.showinfo(
+                "Monitoramento",
+                "O monitoramento já está ativo."
+            )
+
+            return
+
         source = self.source_entry.get()
 
         destination = (
@@ -323,8 +352,48 @@ class AppWindow:
             self.organizer
         )
 
+        self.stats_label.config(
+            text="🟢 Monitoramento ativo"
+        )
+        
         self.monitor.start()
 
-        self.status_label.config(
+        self.stats_label.config(
             text="Monitorando..."
         )
+
+    def stop_monitor(self):
+
+        if self.monitor is None:
+
+            messagebox.showinfo(
+                "Monitoramento",
+                "O monitoramento não está ativo."
+            )
+
+            return
+
+        self.monitor.stop()
+
+        self.monitor = None
+
+        self.stats_label.config(
+            text="🔴 Monitoramento desativado"
+        )
+
+        messagebox.showinfo(
+            "Monitoramento",
+            "Monitoramento encerrado."
+        )
+
+    def show_monitor_help(self):
+
+        messagebox.showinfo(
+            "Monitoramento Automático",
+            "Quando ativado, o PyOrganizer monitora continuamente "
+            "a pasta de origem. Sempre que um novo arquivo for "
+            "adicionado, ele será classificado e movido "
+            "automaticamente para a pasta correspondente.\n\n"
+            "O programa deve permanecer aberto para que o "
+            "monitoramento continue funcionando."
+        )    
