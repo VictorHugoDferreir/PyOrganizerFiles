@@ -13,6 +13,53 @@ class FileOrganizer:
         self.logger = logger
 
         self.last_run = []
+    
+    def organize_file(
+        self,
+        file,
+        destination_folder
+    ):
+
+        file = Path(file)
+
+        if not file.exists():
+            return None
+
+        category = FileClassifier.classify(
+            file.suffix
+        )
+
+        destination = (
+            Path(destination_folder)
+            / category
+        )
+
+        moved_to = FileMover.move_file(
+            file,
+            destination
+        )
+
+        HistoryManager.add_entry(
+            {
+                "file": file.name,
+                "source": str(file),
+                "destination": str(moved_to),
+                "category": category
+            }
+        )
+
+        self.last_run.append(
+            (
+                str(moved_to),
+                str(file)
+            )
+        )
+
+        self.logger.info(
+            f"{file.name} -> {category}"
+        )
+
+        return category
 
     def run(
         self,
@@ -41,6 +88,8 @@ class FileOrganizer:
                 "Documentos": 0,
                 "Videos": 0,
                 "Compactados": 0,
+                "Planilhas": 0,
+                "Apresentações": 0,
                 "Outros": 0
             }
     
@@ -52,6 +101,8 @@ class FileOrganizer:
             "Documentos": 0,
             "Videos": 0,
             "Compactados": 0,
+            "Planilhas": 0,
+            "Apresentações": 0,
             "Outros": 0
         }
 
