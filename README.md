@@ -154,21 +154,6 @@ pip install watchdog
 
 ---
 
-## 📸 Interface
-
-> Adicione aqui um print da aplicação.
-
-Exemplo:
-
-```
-assets/
-    screenshot.png
-```
-
-```markdown
-![Interface](assets/screenshot.png)
-```
-
 ---
 
 ## 📈 Melhorias Futuras
@@ -184,7 +169,7 @@ assets/
 
 ## 👨‍💻 Autor
 
-**Victor Hugo Dutra**
+**Victor Hugo Dutra Ferreira**
 
 Projeto desenvolvido para praticar:
 
